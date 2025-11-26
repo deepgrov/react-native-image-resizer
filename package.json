@@ -1,6 +1,6 @@
 {
-  "name": "@bam.tech/react-native-image-resizer",
-  "version": "3.0.11",
+  "name": "@frontia/react-native-image-resizer",
+  "version": "3.0.12",
   "description": "Rescale local images with React Native",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -63,8 +63,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@evilmartians/lefthook": "^1.2.2",
     "@commitlint/config-conventional": "^17.0.2",
+    "@evilmartians/lefthook": "^1.2.2",
     "@react-native-community/eslint-config": "^3.0.2",
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^28.1.2",
@@ -94,7 +94,7 @@
   "engines": {
     "node": ">= 16.0.0"
   },
-  "packageManager": "^yarn@1.22.15",
+  "packageManager": "yarn@4.9.2",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [

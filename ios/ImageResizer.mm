@@ -1,6 +1,5 @@
 #import "ImageResizer.h"
 #import <React/RCTLog.h>
-#import <AssetsLibrary/AssetsLibrary.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
 #if __has_include(<React/RCTLog.h>)
@@ -271,67 +270,43 @@ UIImage* scaleImage (UIImage* image, CGSize toSize, NSString* mode, bool onlySca
 // Returns the image's metadata, or nil if failed to retrieve it.
 NSMutableDictionary * getImageMeta(NSString * path)
 {
-    if([path hasPrefix:@"assets-library"]) {
-        
-        __block NSMutableDictionary* res = nil;
-        
-        ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
-        {
-            
-            NSDictionary *exif = [[myasset defaultRepresentation] metadata];
-            res = [exif mutableCopy];
-            
-        };
-        
-        ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
-        NSURL *url = [NSURL URLWithString:[path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-        
-        [assetslibrary assetForURL:url resultBlock:resultblock failureBlock:^(NSError *error) { NSLog(@"error couldn't image from assets library"); }];
-        
-        return res;
-        
+    NSData* imageData = nil;
+
+    if ([path hasPrefix:@"data:"] || [path hasPrefix:@"file:"]) {
+        NSURL *imageUrl = [[NSURL alloc] initWithString:path];
+        imageData = [NSData dataWithContentsOfURL:imageUrl];
+
     } else {
-        
-        NSData* imageData = nil;
-        
-        if ([path hasPrefix:@"data:"] || [path hasPrefix:@"file:"]) {
-            NSURL *imageUrl = [[NSURL alloc] initWithString:path];
-            imageData = [NSData dataWithContentsOfURL:imageUrl];
-            
-        } else {
-            imageData = [NSData dataWithContentsOfFile:path];
-        }
-        
-        if(imageData == nil){
-            NSLog(@"Could not get image file data to extract metadata.");
-            return nil;
-        }
-        
-        CGImageSourceRef source = CGImageSourceCreateWithData((CFDataRef)imageData, NULL);
-        
-        
-        if(source != nil){
-            
-            CFDictionaryRef metaRef = CGImageSourceCopyPropertiesAtIndex(source, 0, NULL);
-            
-            // release CF image
-            CFRelease(source);
-            
-            CFMutableDictionaryRef metaRefMutable = CFDictionaryCreateMutableCopy(NULL, 0, metaRef);
-            
-            // release the source meta ref now that we've copie it
-            CFRelease(metaRef);
-            
-            // bridge CF object so it auto releases
-            NSMutableDictionary* res = (NSMutableDictionary *)CFBridgingRelease(metaRefMutable);
-            
-            return res;
-            
-        }
-        else{
-            return nil;
-        }
-        
+        imageData = [NSData dataWithContentsOfFile:path];
+    }
+
+    if(imageData == nil){
+        NSLog(@"Could not get image file data to extract metadata.");
+        return nil;
+    }
+
+    CGImageSourceRef source = CGImageSourceCreateWithData((CFDataRef)imageData, NULL);
+
+    if(source != nil){
+
+        CFDictionaryRef metaRef = CGImageSourceCopyPropertiesAtIndex(source, 0, NULL);
+
+        // release CF image
+        CFRelease(source);
+
+        CFMutableDictionaryRef metaRefMutable = CFDictionaryCreateMutableCopy(NULL, 0, metaRef);
+
+        // release the source meta ref now that we've copie it
+        CFRelease(metaRef);
+
+        // bridge CF object so it auto releases
+        NSMutableDictionary* res = (NSMutableDictionary *)CFBridgingRelease(metaRefMutable);
+
+        return res;
+
+    }
+    else{
+        return nil;
     }
 }
 
